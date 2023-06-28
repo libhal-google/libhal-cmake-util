@@ -55,17 +55,22 @@ class libhal_cmake_util_conan(ConanFile):
     def package_info(self):
         # Add toolchain.cmake to user_toolchain configuration info to be used
         # by CMakeToolchain generator
-        subroutines_path = os.path.join(
+        build_outputs_path = os.path.join(
             self.package_folder, "cmake/build_outputs.cmake")
         optimize_debug_build_path = os.path.join(
             self.package_folder, "cmake/optimize_debug_build.cmake")
 
-        if self.options["add_build_outputs"]:
+        if self.options.add_build_outputs:
             self.conf_info.append(
                 "tools.cmake.cmaketoolchain:user_toolchain",
-                subroutines_path)
+                build_outputs_path)
 
-        if self.options["optimize_debug_build"]:
+        if self.options.optimize_debug_build:
             self.conf_info.append(
                 "tools.cmake.cmaketoolchain:user_toolchain",
                 optimize_debug_build_path)
+
+        self.output.info(
+            f"add_build_outputs: {self.options.add_build_outputs}")
+        self.output.info(
+            f"optimize_debug_build: {self.options.optimize_debug_build}")
