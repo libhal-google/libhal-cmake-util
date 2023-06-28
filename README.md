@@ -3,6 +3,8 @@
 Generic cmake utilities such as macros, functions, and toolchains for all
 categories of libhal libraries.
 
+This package is a REQUIREMENT for libhal libraries using cmake.
+
 ## Integration into Conan
 
 Add the following line to the `requirements()` function of your library or
