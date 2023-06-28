@@ -7,13 +7,17 @@ This package is a REQUIREMENT for libhal libraries using cmake.
 
 ## Integration into Conan
 
-Add the following line to the `requirements()` function of your library or
+Add the following line to the `build_requirements()` method of your library or
 applications `conanfile.py`:
 
 ```python
-def requirements(self):
+def build_requirements(self):
   self.tool_requires("libhal-cmake-util/1.0.0")
 ```
+
+**NOTE**: the `tool_requires` line can also go in the `requirements()` method or
+in the `tool_requires` attribute, but the standard way of doing this is in
+libhal is a `build_requirements()` method.
 
 ## Package Options
 
@@ -21,7 +25,7 @@ This package comes with some options to customize its behavior. You can set
 these options in the `tool_requires` function.
 
 ```python
-def requirements(self):
+def build_requirements(self):
   self.tool_requires("libhal-cmake-util/1.0.0",
       options={
         "add_build_outputs": True,
