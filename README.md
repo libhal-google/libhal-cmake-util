@@ -32,7 +32,9 @@ def requirements(self):
 When the `add_build_outputs` option is set to `True`, a range of post-build
 utility functions are made available. These functions generate additional files
 and information derived from the final binary or .elf file. These functions are
-provided to your CMake build project via the Conan CMake toolchain file.
+provided to your CMake build project via the Conan CMake toolchain file. If
+you are using `conan build` along with the `CMakeToolchain` generator, then
+these functions will be made available in your `CMakeLists.txt` build script.
 
 - `libhal_generate_intel_hex(elf_file)`: transforms the provided elf file into
   an Intel HEX (.hex) file.
