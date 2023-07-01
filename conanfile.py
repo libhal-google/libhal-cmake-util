@@ -23,7 +23,7 @@ required_conan_version = ">=1.50.0"
 
 class libhal_cmake_util_conan(ConanFile):
     name = "libhal-cmake-util"
-    version = "1.0.0"
+    version = "1.1.0"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libhal-armcortex"
@@ -33,11 +33,13 @@ class libhal_cmake_util_conan(ConanFile):
     no_copy_source = True
     options = {
         "add_build_outputs": [True, False],
-        "optimize_debug_build": [True, False]
+        "optimize_debug_build": [True, False],
+        "link_time_optimization": [True, False]
     }
     default_options = {
         "add_build_outputs": True,
-        "optimize_debug_build": True
+        "optimize_debug_build": True,
+        "link_time_optimization": True
     }
 
     def package_id(self):
@@ -59,6 +61,8 @@ class libhal_cmake_util_conan(ConanFile):
             self.package_folder, "cmake/build_outputs.cmake")
         optimize_debug_build_path = os.path.join(
             self.package_folder, "cmake/optimize_debug_build.cmake")
+        link_time_optimization_path = os.path.join(
+            self.package_folder, "cmake/link_time_optimization.cmake")
 
         if self.options.add_build_outputs:
             self.conf_info.append(
@@ -70,7 +74,14 @@ class libhal_cmake_util_conan(ConanFile):
                 "tools.cmake.cmaketoolchain:user_toolchain",
                 optimize_debug_build_path)
 
+        if self.options.link_time_optimization:
+            self.conf_info.append(
+                "tools.cmake.cmaketoolchain:user_toolchain",
+                link_time_optimization_path)
+
         self.output.info(
             f"add_build_outputs: {self.options.add_build_outputs}")
         self.output.info(
             f"optimize_debug_build: {self.options.optimize_debug_build}")
+        self.output.info(
+            f"link_time_optimization: {self.options.link_time_optimization}")
