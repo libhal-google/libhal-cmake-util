@@ -23,7 +23,7 @@ required_conan_version = ">=2.0.6"
 
 class libhal_cmake_util_conan(ConanFile):
     name = "libhal-cmake-util"
-    version = "1.0.0"
+    version = "1.1.0"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libhal-armcortex"
@@ -51,6 +51,8 @@ class libhal_cmake_util_conan(ConanFile):
             self.package_folder, "licenses"),  src=self.source_folder)
         copy(self, "cmake/*.cmake", src=self.source_folder,
              dst=self.package_folder)
+        copy(self, "cmake/*.conf", src=self.source_folder,
+             dst=self.package_folder)
 
     def package_info(self):
         # Add toolchain.cmake to user_toolchain configuration info to be used
@@ -59,6 +61,10 @@ class libhal_cmake_util_conan(ConanFile):
             self.package_folder, "cmake/build_outputs.cmake")
         optimize_debug_build_path = os.path.join(
             self.package_folder, "cmake/optimize_debug_build.cmake")
+        unit_tests_path = os.path.join(
+            self.package_folder, "cmake/unit_tests.cmake")
+        clang_tidy_config_path = os.path.join(
+            self.package_folder, "cmake/clang-tidy.conf")
 
         if self.options.add_build_outputs:
             self.conf_info.append(
@@ -70,6 +76,12 @@ class libhal_cmake_util_conan(ConanFile):
                 "tools.cmake.cmaketoolchain:user_toolchain",
                 optimize_debug_build_path)
 
+        self.conf_info.append(
+            "tools.cmake.cmaketoolchain:user_toolchain",
+            unit_tests_path)
+
+        self.output.info(
+            f"clang_tidy_config_path: {clang_tidy_config_path}")
         self.output.info(
             f"add_build_outputs: {self.options.add_build_outputs}")
         self.output.info(
