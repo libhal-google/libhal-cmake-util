@@ -61,8 +61,8 @@ class libhal_cmake_util_conan(ConanFile):
             self.package_folder, "cmake/build_outputs.cmake")
         optimize_debug_build_path = os.path.join(
             self.package_folder, "cmake/optimize_debug_build.cmake")
-        unit_tests_path = os.path.join(
-            self.package_folder, "cmake/unit_tests.cmake")
+        build_path = os.path.join(
+            self.package_folder, "cmake/build.cmake")
         clang_tidy_config_path = os.path.join(
             self.package_folder, "cmake/clang-tidy.conf")
 
@@ -78,7 +78,7 @@ class libhal_cmake_util_conan(ConanFile):
 
         self.conf_info.append(
             "tools.cmake.cmaketoolchain:user_toolchain",
-            unit_tests_path)
+            build_path)
 
         self.output.info(
             f"clang_tidy_config_path: {clang_tidy_config_path}")
