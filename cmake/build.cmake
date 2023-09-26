@@ -18,69 +18,48 @@ include(CheckCXXCompilerFlag)
 # manger) puts it.
 set(LIBHAL_UNIT_TEST_PATH ${CMAKE_CURRENT_LIST_DIR})
 
-#[=======================================================================[.rst:
-build
-------------------
+function(libhal_make_library)
+  # Parse CMake function arguments
+  set(options)
+  set(one_value_args LIBRARY_NAME)
+  set(multi_value_args SOURCES INCLUDES PACKAGES LINK_LIBRARIES)
+  cmake_parse_arguments(LIBRARY_ARGS
+    "${options}"
+    "${one_value_args}"
+    "${multi_value_args}"
+    ${ARGN})
 
-Build unit tests for libhal packages/projects
+  foreach(PACKAGE ${LIBRARY_ARGS_PACKAGES})
+    find_package(${PACKAGE} REQUIRED)
+  endforeach()
 
-.. command:: libhal_unit_test
+  add_library(${LIBRARY_ARGS_LIBRARY_NAME} ${LIBRARY_ARGS_SOURCES})
+  target_include_directories(${LIBRARY_ARGS_LIBRARY_NAME} PUBLIC
+    include
+    src
+    ${LIBRARY_ARGS_INCLUDES})
+  target_compile_features(${LIBRARY_ARGS_LIBRARY_NAME} PRIVATE cxx_std_20)
+  target_compile_options(${LIBRARY_ARGS_LIBRARY_NAME} PRIVATE
+    -g
+    -Werror
+    -Wall
+    -Wextra
+    -Wshadow)
+  target_link_libraries(${LIBRARY_ARGS_LIBRARY_NAME} PUBLIC
+    ${LIBRARY_ARGS_LINK_LIBRARIES})
+  install(TARGETS ${LIBRARY_ARGS_LIBRARY_NAME})
+endfunction()
 
-  .. code-block:: cmake
-
-    libhal_unit_test([SOURCES <files...>]
-                     [INCLUDES <directories...>]
-                     [PACKAGES <packages...>]
-                     [LINK_LIBRARIES <link_libraries...>])
-
-  - SOURCES is a list of source files to include in the build for the unit
-    test. The set of source files MUST include the project source files as
-    well as the unit test source files.
-  - INCLUDES is a list of include directires to be added to the executable.
-    Note that the `include`, `src`, and `test` directories are already
-    included for you.
-  - PACKAGES list of packages to automatically find and make available for the
-    unit test build. Packages needed by the package binary will also be needed
-    for unit tests, so supply them here.
-  - LINK_LIBRARIES list of the libraries to link into the unit test library.
-    Packages needed by the package binary will also be needed for unit tests,
-    so supply them here. DO NOT include the package/library that is being
-    tested here. This can cause linker errors because the same definition of
-    symbols will appear twice due to the files being compiled again in the
-    SOURCES directory. Omitting the source files causing the linker error will
-    cause those source files to be skipped during coverage. Clang and GCC both
-    need to add instrumentation to the source files during compilation to
-    enable coverage and package libraries are built without this
-    instrumentation.
-
-All libhal packages and projects must be compiled with this function to comply
-with the libhal standards. This function does the following:
-
-  1. Creates an target/executable named "unit_test"
-  2. Accepts SOURCES and INCLUDE directories and provides them to the target
-  3. Enables Address Sanitizer if the compiler supports it (issues warning if
-  it does not)
-  4. Applies clang-tidy checks to all files if the clang-tidy program is
-     available on the system (issues warning if it does not)
-  5. Add flags to enable code coverage for the unit test executable
-
-This function requires that Boost.UT unit testing framework to be available
-as a package. In conan, add this to your `build_requirements()` method:
-
-  .. code-block:: python
-
-    def build_requirements(self):
-        self.tool_requires("libhal-cmake-util/1.1.0")
-        self.test_requires("boost-ext-ut/1.1.9")
-
-#]=======================================================================]
 function(libhal_unit_test)
   # Parse CMake function arguments
   set(options)
   set(one_value_args)
   set(multi_value_args SOURCES INCLUDES PACKAGES LINK_LIBRARIES)
-  cmake_parse_arguments(UNIT_TEST_ARGS "${options}" "${one_value_args}"
-    "${multi_value_args}" ${ARGN})
+  cmake_parse_arguments(UNIT_TEST_ARGS
+    "${options}"
+    "${one_value_args}"
+    "${multi_value_args}"
+    ${ARGN})
 
   # Setup unit_test executable
   find_package(ut REQUIRED CONFIG)
@@ -147,102 +126,15 @@ function(libhal_unit_test)
   add_custom_target(run_tests ALL DEPENDS unit_test COMMAND unit_test)
 endfunction()
 
-#[=======================================================================[.rst:
-
-Build libhal library
-
-.. command:: libhal_make_library
-
-  .. code-block:: cmake
-
-    libhal_make_library([LIBRARY_NAME <library_name>]
-                        [SOURCES <files...>]
-                        [INCLUDES <directories...>]
-                        [PACKAGES <packages...>]
-                        [LINK_LIBRARIES <link_libraries...>])
-
-  - LIBRARY_NAME name of the library (e.g. libhal-lpc40, libhal-util)
-  - SOURCES is a list of source files to include in the package build.
-  - INCLUDES is a list of include directires to be added to the executable.
-    Note that the `include` and `src` directories are already included for you.
-  - PACKAGES list of packages to automatically find and make available for the
-    package build.
-  - LINK_LIBRARIES list of the libraries to link into the library.
-
-#]=======================================================================]
-function(libhal_make_library)
-  # Parse CMake function arguments
-  set(options)
-  set(one_value_args LIBRARY_NAME)
-  set(multi_value_args SOURCES INCLUDES PACKAGES LINK_LIBRARIES)
-  cmake_parse_arguments(LIBRARY_ARGS "${options}" "${one_value_args}"
-    "${multi_value_args}" ${ARGN})
-
-  foreach(PACKAGE ${LIBRARY_ARGS_PACKAGES})
-    find_package(${PACKAGE} REQUIRED)
-  endforeach()
-
-  add_library(${LIBRARY_ARGS_LIBRARY_NAME} ${LIBRARY_ARGS_SOURCES})
-  target_include_directories(${LIBRARY_ARGS_LIBRARY_NAME} PUBLIC
-    include
-    src
-    ${LIBRARY_ARGS_INCLUDES})
-  target_compile_features(${LIBRARY_ARGS_LIBRARY_NAME} PRIVATE cxx_std_20)
-  target_compile_options(${LIBRARY_ARGS_LIBRARY_NAME} PRIVATE
-    -g
-    -Werror
-    -Wall
-    -Wextra
-    -Wshadow)
-  target_link_libraries(${LIBRARY_ARGS_LIBRARY_NAME} PUBLIC
-    ${LIBRARY_ARGS_LINK_LIBRARIES})
-  install(TARGETS ${LIBRARY_ARGS_LIBRARY_NAME})
-endfunction()
-
-#[=======================================================================[.rst:
-
-Build and validate unit tests and build packages
-
-Recommended to use this function rather than libhal_unit_test and
-libhal_make_library separately.
-
-.. command:: libhal_test_and_make_library
-
-  .. code-block:: cmake
-
-    libhal_test_and_make_library([LIBRARY_NAME <library_name>]
-                                 [SOURCES <files...>]
-                                 [INCLUDES <directories...>]
-                                 [PACKAGES <packages...>]
-                                 [LINK_LIBRARIES <link_libraries...>])
-
-  - LIBRARY_NAME name of the library (e.g. libhal-lpc40, libhal-util)
-  - SOURCES is a list of source files to include in the package build and unit
-    tests.
-  - TEST_SOURCES is a list of source unit test source files used to build the
-    unit test executable. This will not be included in the library package build.
-  - INCLUDES is a list of include directires to be added to the executable.
-    Note that the `include` and `src` directories are already included for you.
-  - PACKAGES list of packages to automatically find and make available for the
-    package build.
-  - LINK_LIBRARIES list of the libraries to link into the library.
-
-This function requires that Boost.UT unit testing framework to be available
-as a package. In conan, add this to your `build_requirements()` method:
-
-  .. code-block:: python
-
-    def build_requirements(self):
-        self.tool_requires("libhal-cmake-util/1.1.0")
-        self.test_requires("boost-ext-ut/1.1.9")
-
-#]=======================================================================]
 function(libhal_test_and_make_library)
   set(options)
   set(one_value_args LIBRARY_NAME)
   set(multi_value_args SOURCES TEST_SOURCES INCLUDES PACKAGES LINK_LIBRARIES)
-  cmake_parse_arguments(BUILD_ARGS "${options}" "${one_value_args}"
-    "${multi_value_args}" ${ARGN})
+  cmake_parse_arguments(BUILD_ARGS
+    "${options}"
+    "${one_value_args}"
+    "${multi_value_args}"
+    ${ARGN})
 
   if(NOT ${CMAKE_CROSSCOMPILING})
     libhal_unit_test(
