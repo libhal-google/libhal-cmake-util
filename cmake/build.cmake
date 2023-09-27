@@ -16,11 +16,11 @@ include(CheckCXXCompilerFlag)
 
 # Save the path of this file resides, where ever conan (or any other package
 # manger) puts it.
-set(LIBHAL_UNIT_TEST_PATH ${CMAKE_CURRENT_LIST_DIR})
+set(LIBHAL_CMAK_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 function(libhal_make_library)
   # Parse CMake function arguments
-  set(options)
+  set(options USE_CLANG_TIDY)
   set(one_value_args LIBRARY_NAME)
   set(multi_value_args SOURCES INCLUDES PACKAGES LINK_LIBRARIES)
   cmake_parse_arguments(LIBRARY_ARGS
@@ -48,6 +48,23 @@ function(libhal_make_library)
   target_link_libraries(${LIBRARY_ARGS_LIBRARY_NAME} PUBLIC
     ${LIBRARY_ARGS_LINK_LIBRARIES})
   install(TARGETS ${LIBRARY_ARGS_LIBRARY_NAME})
+
+  if(${LIBRARY_ARGS_USE_CLANG_TIDY})
+    # Check if clang-tidy exists on the system and if so, evaluate each file
+    # against
+    find_program(clang_tidy_exe NAMES "clang-tidy")
+
+    # If ti exists, add it as an additional check for each source file
+    if(DEFINED clang_tidy_exe)
+      message(STATUS "libhal[unit test]: Using clang-tidy")
+      set(config_file "${LIBHAL_CMAK_PATH}/clang-tidy.conf")
+      set(clang_tidy "${clang_tidy_exe}" "--config-file=${config_file}")
+      set_target_properties(${LIBRARY_ARGS_LIBRARY_NAME} PROPERTIES
+        CXX_CLANG_TIDY "${clang_tidy}")
+    else()
+      message(WARNING "'clang-tidy' not available! Install it to run checks!")
+    endif(DEFINED clang_tidy_exe)
+  endif()
 endfunction()
 
 function(libhal_unit_test)
@@ -116,7 +133,7 @@ function(libhal_unit_test)
   # If ti exists, add it as an additional check for each source file
   if(DEFINED clang_tidy_exe)
     message(STATUS "libhal[unit test]: Using clang-tidy")
-    set(config_file "${LIBHAL_UNIT_TEST_PATH}/clang-tidy.conf")
+    set(config_file "${LIBHAL_CMAK_PATH}/clang-tidy.conf")
     set(clang_tidy "${clang_tidy_exe}" "--config-file=${config_file}")
     set_target_properties(unit_test PROPERTIES CXX_CLANG_TIDY "${clang_tidy}")
   else()

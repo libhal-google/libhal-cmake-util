@@ -136,7 +136,10 @@ def build_requirements(self):
 
 ### `libhal_unit_test()`
 
-This function builds and executes unit tests for libhal.
+This function builds and executes unit tests for libhal. Use this for header
+only libraries that do not generate library files, but do have buildable unit
+tests. If non-test source files are present, then the libhal package MUST use
+the `libhal_test_and_make_library()` function.
 
 ```cmake
 libhal_unit_test([SOURCES <files...>]
@@ -145,16 +148,16 @@ libhal_unit_test([SOURCES <files...>]
                  [LINK_LIBRARIES <link_libraries...>])
 ```
 
-- SOURCES is a list of source files to include in the build for the unit
+- `SOURCES` is a list of source files to include in the build for the unit
   test. The set of source files MUST include the project source files as
   well as the unit test source files.
-- INCLUDES is a list of include directires to be added to the executable.
+- `INCLUDES` is a list of include directires to be added to the executable.
   Note that the `include`, `src`, and `test` directories are already
   included for you.
-- PACKAGES list of packages to automatically find and make available for the
+- `PACKAGES` list of packages to automatically find and make available for the
   unit test build. Packages needed by the package binary will also be needed
   for unit tests, so supply them here.
-- LINK_LIBRARIES list of the libraries to link into the unit test library.
+- `LINK_LIBRARIES` list of the libraries to link into the unit test library.
   Packages needed by the package binary will also be needed for unit tests,
   so supply them here. DO NOT include the package/library that is being
   tested here. This can cause linker errors because the same definition of
@@ -187,7 +190,8 @@ as a package. In conan, add this to your `build_requirements()` method:
 
 ### `libhal_make_library()`
 
-This function builds libhal libraries:
+This function builds libhal libraries. Use this when building a libhal package,
+where unit tests are not available or not necessary.
 
 ```cmake
 libhal_make_library([LIBRARY_NAME <library_name>]
@@ -204,6 +208,7 @@ libhal_make_library([LIBRARY_NAME <library_name>]
 - `PACKAGES` list of packages to automatically find and make available for the
   package build.
 - `LINK_LIBRARIES` list of the libraries to link into the library.
+- `USE_CLANG_TIDY` use this option to enable clang tidy checks for libraries.
 
 ## Contributing
 
