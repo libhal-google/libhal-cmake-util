@@ -101,10 +101,8 @@ This package automatically injects libhal cmake utility functions:
 
 ### `libhal_test_and_make_library()`
 
-Build and validate unit tests and build packages
-
-It is recommended to use this function rather than libhal_unit_test and
-libhal_make_library separately.
+Builds and tests a library. This function must be used in place of using
+libhal_unit_test and libhal_make_library separately.
 
 ```cmake
 libhal_test_and_make_library([LIBRARY_NAME <library_name>]
@@ -136,10 +134,10 @@ def build_requirements(self):
 
 ### `libhal_unit_test()`
 
-This function builds and executes unit tests for libhal. Use this for header
-only libraries that do not generate library files, but do have buildable unit
-tests. If non-test source files are present, then the libhal package MUST use
-the `libhal_test_and_make_library()` function.
+Builds and executes unit tests for libhal. Use this for header only libraries
+that do not generate library files, but do have build-able unit tests. If
+non-test source files are present, then the libhal package MUST use the
+`libhal_test_and_make_library()` function.
 
 ```cmake
 libhal_unit_test([SOURCES <files...>]
@@ -190,8 +188,8 @@ as a package. In conan, add this to your `build_requirements()` method:
 
 ### `libhal_make_library()`
 
-This function builds libhal libraries. Use this when building a libhal package,
-where unit tests are not available or not necessary.
+Builds libhal libraries. Use this when unit tests are not available or necessary
+but a package must be built.
 
 ```cmake
 libhal_make_library([LIBRARY_NAME <library_name>]
@@ -209,6 +207,54 @@ libhal_make_library([LIBRARY_NAME <library_name>]
   package build.
 - `LINK_LIBRARIES` list of the libraries to link into the library.
 - `USE_CLANG_TIDY` use this option to enable clang tidy checks for libraries.
+
+### `libhal_build_demos()`
+
+Builds a set of demos.
+
+For this function to work, the directory structure must fit the following:
+
+```tree
+demos/
+├── CMakeLists.txt
+├── applications
+│   ├── adc.cpp
+│   ├── blinker.cpp
+│   ├── can.cpp
+│   ├── gpio.cpp
+│   ├── i2c.cpp
+│   ├── interrupt_pin.cpp
+│   ├── pwm.cpp
+│   ├── spi.cpp
+│   ├── ...
+│   └── uart.cpp
+└── main.cpp
+```
+
+Where main contains the startup code and calls a common function that is
+implemented across the demos in the `applications`` directory.
+
+```cmake
+libhal_build_demos([LIBRARY_NAME <library_name>]
+                    [INCLUDES <directories...>]
+                    [PACKAGES <packages...>]
+                    [LINK_LIBRARIES <link_libraries...>]
+                    [LINK_FLAGS <link_flags...>]
+                    DISABLE_CLANG_TIDY)
+```
+
+- `DEMOS` names of the demos in the `application/` directory. The names must
+  corrispond to the names of the `.cpp` files in the directory. For example,
+  a demo name of `adc` must have a `adc.cpp` file in the `application/`
+  directory.
+- `INCLUDES` list of include directories. The list has no default and is
+  empty.
+- `PACKAGES` list of packages to automatically find and make available for the
+  package build.
+- `LINK_LIBRARIES` list of the libraries to link into the library.
+- `LINK_FLAGS` linker flags for the demos.
+- `DISABLE_CLANG_TIDY` option is used to disable clang-tidy checks for host
+  builds.
 
 ## Contributing
 
