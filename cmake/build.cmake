@@ -202,7 +202,13 @@ function(libhal_build_demos)
   # Parse CMake function arguments
   set(options DISABLE_CLANG_TIDY)
   set(one_value_args)
-  set(multi_value_args DEMOS INCLUDES PACKAGES LINK_LIBRARIES LINK_FLAGS)
+  set(multi_value_args
+    DEMOS
+    SOURCES
+    INCLUDES
+    PACKAGES
+    LINK_LIBRARIES
+    LINK_FLAGS)
   cmake_parse_arguments(DEMO_ARGS
     "${options}"
     "${one_value_args}"
@@ -213,7 +219,7 @@ function(libhal_build_demos)
     find_package(${PACKAGE} REQUIRED)
   endforeach()
 
-  add_library(startup_code main.cpp)
+  add_library(startup_code main.cpp ${DEMO_ARGS_SOURCES})
   target_compile_features(startup_code PRIVATE cxx_std_20)
   target_include_directories(startup_code PUBLIC ${DEMO_ARGS_INCLUDES})
   target_compile_options(startup_code PRIVATE
@@ -223,7 +229,7 @@ function(libhal_build_demos)
     -Wextra
     -Wshadow
   )
-  target_link_libraries(startup_code PRIVATE libhal::lpc40)
+  target_link_libraries(startup_code PRIVATE ${DEMO_ARGS_LINK_LIBRARIES})
 
   if(NOT ${DEMO_ARGS_DISABLE_CLANG_TIDY})
     _libhal_add_clang_tidy_check(startup_code)
