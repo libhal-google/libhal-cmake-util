@@ -162,7 +162,14 @@ endfunction()
 function(libhal_test_and_make_library)
   set(options)
   set(one_value_args LIBRARY_NAME)
-  set(multi_value_args SOURCES TEST_SOURCES INCLUDES PACKAGES LINK_LIBRARIES)
+  set(multi_value_args
+    SOURCES
+    TEST_SOURCES
+    INCLUDES
+    PACKAGES
+    LINK_LIBRARIES
+    TEST_PACKAGES
+    TEST_LINK_LIBRARIES)
   cmake_parse_arguments(BUILD_ARGS
     "${options}"
     "${one_value_args}"
@@ -173,8 +180,12 @@ function(libhal_test_and_make_library)
     libhal_unit_test(
       SOURCES ${BUILD_ARGS_SOURCES} ${BUILD_ARGS_TEST_SOURCES}
       INCLUDES ${BUILD_ARGS_INCLUDES}
-      PACKAGES ${BUILD_ARGS_PACKAGES}
-      LINK_LIBRARIES ${BUILD_ARGS_LINK_LIBRARIES}
+      PACKAGES
+      ${BUILD_ARGS_PACKAGES}
+      ${BUILD_ARGS_TEST_PACKAGES}
+      LINK_LIBRARIES
+      ${BUILD_ARGS_LINK_LIBRARIES}
+      ${BUILD_ARGS_TEST_LINK_LIBRARIES}
     )
   endif()
 

@@ -102,7 +102,7 @@ This package automatically injects libhal cmake utility functions:
 ### `libhal_test_and_make_library()`
 
 Builds and tests a library. This function must be used in place of using
-libhal_unit_test and libhal_make_library separately.
+`libhal_unit_test` and `libhal_make_library` separately.
 
 ```cmake
 libhal_test_and_make_library([LIBRARY_NAME <library_name>]
@@ -122,13 +122,17 @@ libhal_test_and_make_library([LIBRARY_NAME <library_name>]
 - `PACKAGES` list of packages to automatically find and make available for the
   package build.
 - `LINK_LIBRARIES` list of the libraries to link into the library.
+- `TEST_PACKAGES` list of test packages to automatically find and make available
+  for the package build.
+- `TEST_LINK_LIBRARIES` list of the libraries to link into the unit tests. These
+  libraries will be added to the library target.
 
 This function requires that Boost.UT unit testing framework to be available
 as a package. In conan, add this to your `build_requirements()` method:
 
 ```python
 def build_requirements(self):
-    self.tool_requires("libhal-cmake-util/1.1.0")
+    self.tool_requires("libhal-cmake-util/2.1.0")
     self.test_requires("boost-ext-ut/1.1.9")
 ```
 
