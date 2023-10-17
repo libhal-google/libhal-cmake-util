@@ -12,7 +12,7 @@ applications `conanfile.py`:
 
 ```python
 def build_requirements(self):
-  self.tool_requires("libhal-cmake-util/1.0.0")
+  self.tool_requires("libhal-cmake-util/2.2.0")
 ```
 
 **NOTE**: the `tool_requires` line can also go in the `requirements()` method or
@@ -26,7 +26,7 @@ these options in the `tool_requires` function.
 
 ```python
 def build_requirements(self):
-  self.tool_requires("libhal-cmake-util/1.0.0",
+  self.tool_requires("libhal-cmake-util/2.2.0",
       options={
         "add_build_outputs": True,
         "optimize_debug_build": True,
@@ -132,7 +132,7 @@ as a package. In conan, add this to your `build_requirements()` method:
 
 ```python
 def build_requirements(self):
-    self.tool_requires("libhal-cmake-util/2.1.0")
+    self.tool_requires("libhal-cmake-util/2.2.0")
     self.test_requires("boost-ext-ut/1.1.9")
 ```
 
@@ -186,7 +186,7 @@ as a package. In conan, add this to your `build_requirements()` method:
 
 ```python
   def build_requirements(self):
-      self.tool_requires("libhal-cmake-util/1.1.0")
+      self.tool_requires("libhal-cmake-util/2.2.0")
       self.test_requires("boost-ext-ut/1.1.9")
 ```
 
