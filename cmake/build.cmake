@@ -215,11 +215,25 @@ function(libhal_build_demos)
     "${multi_value_args}"
     ${ARGN})
 
+  if(NOT DEFINED ENV{LIBHAL_PLATFORM} OR
+    NOT DEFINED ENV{LIBHAL_PLATFORM_LIBRARY})
+    message(FATAL_ERROR
+      "Both LIBHAL_PLATFORM and LIBHAL_PLATFORM_LIBRARY environment variables "
+      "must be defined. Make sure you are using the correct profile!")
+  endif()
+
+  set(platform_link_library libhal::$ENV{LIBHAL_PLATFORM_LIBRARY})
+
+  find_package(libhal-$ENV{LIBHAL_PLATFORM_LIBRARY} REQUIRED)
+
   foreach(PACKAGE ${DEMO_ARGS_PACKAGES})
     find_package(${PACKAGE} REQUIRED)
   endforeach()
 
-  add_library(startup_code main.cpp ${DEMO_ARGS_SOURCES})
+  add_library(startup_code
+    main.cpp
+    platforms/$ENV{LIBHAL_PLATFORM}.cpp
+    ${DEMO_ARGS_SOURCES})
   target_compile_features(startup_code PRIVATE cxx_std_20)
   target_include_directories(startup_code PUBLIC ${DEMO_ARGS_INCLUDES})
   target_compile_options(startup_code PRIVATE
@@ -229,7 +243,10 @@ function(libhal_build_demos)
     -Wextra
     -Wshadow
   )
-  target_link_libraries(startup_code PRIVATE ${DEMO_ARGS_LINK_LIBRARIES})
+  target_link_libraries(startup_code PRIVATE
+    ${DEMO_ARGS_LINK_LIBRARIES}
+    ${platform_link_library}
+  )
 
   if(NOT ${DEMO_ARGS_DISABLE_CLANG_TIDY})
     _libhal_add_clang_tidy_check(startup_code)
@@ -250,7 +267,9 @@ function(libhal_build_demos)
     )
     target_link_libraries(${elf} PRIVATE
       startup_code
-      ${DEMO_ARGS_LINK_LIBRARIES})
+      ${DEMO_ARGS_LINK_LIBRARIES}
+      ${platform_link_library}
+    )
 
     if(${CMAKE_CROSSCOMPILING})
       _libhal_using_picolibc(using_picolibc)
