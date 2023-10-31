@@ -7,7 +7,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an "AS IS"BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -18,21 +18,43 @@ include(CheckCXXCompilerFlag)
 # manger) puts it.
 set(LIBHAL_SCRIPT_PATH ${CMAKE_CURRENT_LIST_DIR})
 
-# Check if clang-tidy exists on the system and if so, evaluate each file
-# against
-find_program(LIBHAL_CLANG_TIDY_PROGRAM NAMES "clang-tidy")
+# Colored LIBHAL text
+set(LIBHAL_TITLE "${BoldMagenta}[LIBHAL]:${ColourReset}")
 
-# If ti exists, add it as an additional check for each source file
-if(DEFINED LIBHAL_CLANG_TIDY_PROGRAM)
-  message(STATUS "LIBHAL: clang-tidy AVAILABLE!")
-  set(LIBHAL_CLANG_TIDY_CONFIG_FILE
-    "${LIBHAL_SCRIPT_PATH}/clang-tidy.conf")
-  set(LIBHAL_CLANG_TIDY "${LIBHAL_CLANG_TIDY_PROGRAM}"
-    "--config-file=${LIBHAL_CLANG_TIDY_CONFIG_FILE}")
+# Find clang-tidy
+find_program(LIBHAL_CLANG_TIDY_PROGRAM NAMES "clang-tidy" DOC
+  "Path to clang-tidy executable")
+
+if(NOT LIBHAL_CLANG_TIDY_PROGRAM)
+  message(STATUS "${LIBHAL_TITLE} clang-tidy not found.")
 else()
-  message(WARNING
-    "LIBHAL:'clang-tidy' program is NOT available! Install it to run checks!")
-endif(DEFINED LIBHAL_CLANG_TIDY_PROGRAM)
+  # Execute clang-tidy --version and parse the output
+  execute_process(
+    COMMAND ${LIBHAL_CLANG_TIDY_PROGRAM} --version
+    OUTPUT_VARIABLE clang_tidy_version_output
+  )
+
+  # Regex to extract version number
+  string(REGEX MATCH ".* version ([0-9]+)\\.([0-9]+)\\.([0-9]+)"
+    _
+    ${clang_tidy_version_output})
+  set(clang_tidy_major_version ${CMAKE_MATCH_1})
+  set(clang_tidy_minor_version ${CMAKE_MATCH_2})
+  set(clang_tidy_patch_version ${CMAKE_MATCH_3})
+
+  # Check if version is 15 or higher
+  if(clang_tidy_major_version LESS 15)
+    message(WARNING "clang-tidy version is too old. Version 15 or newer is required. Found: ${clang_tidy_major_version}.${clang_tidy_minor_version}.${clang_tidy_patch_version}")
+  else()
+    # Set clang-tidy as a CXX language standard option
+    set(CMAKE_CXX_CLANG_TIDY ${LIBHAL_CLANG_TIDY_PROGRAM})
+    message(STATUS "${LIBHAL_TITLE} clang-tidy version ${clang_tidy_major_version}.${clang_tidy_minor_version}.${clang_tidy_patch_version} AVAILABLE!")
+    set(LIBHAL_CLANG_TIDY_CONFIG_FILE
+      "${LIBHAL_SCRIPT_PATH}/clang-tidy.conf")
+    set(LIBHAL_CLANG_TIDY "${LIBHAL_CLANG_TIDY_PROGRAM}"
+      "--config-file=${LIBHAL_CLANG_TIDY_CONFIG_FILE}")
+  endif()
+endif()
 
 # Adds clang tidy check to target for host builds (skipped if a cross build)
 function(_libhal_add_clang_tidy_check TARGET)
@@ -40,8 +62,7 @@ function(_libhal_add_clang_tidy_check TARGET)
     set_target_properties(${TARGET} PROPERTIES CXX_CLANG_TIDY
       "${LIBHAL_CLANG_TIDY}")
   else()
-    message(STATUS
-      "LIBHAL: Cross compiling, skipping clang-tidy checks for \"${TARGET}\"")
+    message(STATUS "${LIBHAL_TITLE} Cross compiling, skipping clang-tidy checks for \"${TARGET}\"")
   endif()
 endfunction()
 
@@ -122,11 +143,11 @@ function(libhal_unit_test)
   endblock()
 
   if(${ADDRESS_SANITIZER_SUPPORT})
-    message(STATUS "LIBHAL: Address Sanitizer available! Using it for tests!")
+    message(STATUS "${LIBHAL_TITLE} Address Sanitizer available! Using it for tests!")
     target_compile_options(unit_test PRIVATE -fsanitize=address)
     target_link_options(unit_test PRIVATE -fsanitize=address)
   else()
-    message(STATUS "LIBHAL: Address Sanitizer not supported!")
+    message(STATUS "${LIBHAL_TITLE} Address Sanitizer not supported!")
   endif(${ADDRESS_SANITIZER_SUPPORT})
 
   _libhal_add_clang_tidy_check(unit_test)
@@ -254,7 +275,7 @@ function(libhal_build_demos)
 
   foreach(demo ${DEMO_ARGS_DEMOS})
     set(elf ${demo}.elf)
-    message(STATUS "LIBHAL: Generating Demo for \"${elf}\"")
+    message(STATUS "${LIBHAL_TITLE} Generating Demo for \"${elf}\"")
     add_executable(${elf} ${CMAKE_SOURCE_DIR}/applications/${demo}.cpp)
     target_compile_features(${elf} PRIVATE cxx_std_20)
     target_include_directories(${elf} PUBLIC ${DEMO_ARGS_INCLUDES})

@@ -23,7 +23,7 @@ required_conan_version = ">=2.0.6"
 
 class libhal_cmake_util_conan(ConanFile):
     name = "libhal-cmake-util"
-    version = "2.2.0"
+    version = "3.0.0"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libhal-armcortex"
@@ -63,6 +63,8 @@ class libhal_cmake_util_conan(ConanFile):
             self.package_folder, "cmake/optimize_debug_build.cmake")
         build_path = os.path.join(
             self.package_folder, "cmake/build.cmake")
+        colors_path = os.path.join(
+            self.package_folder, "cmake/colors.cmake")
         clang_tidy_config_path = os.path.join(
             self.package_folder, "cmake/clang-tidy.conf")
 
@@ -78,7 +80,12 @@ class libhal_cmake_util_conan(ConanFile):
 
         self.conf_info.append(
             "tools.cmake.cmaketoolchain:user_toolchain",
+            colors_path)
+
+        self.conf_info.append(
+            "tools.cmake.cmaketoolchain:user_toolchain",
             build_path)
+
 
         self.output.info(
             f"clang_tidy_config_path: {clang_tidy_config_path}")
