@@ -47,7 +47,6 @@ else()
     message(WARNING "clang-tidy version is too old. Version 15 or newer is required. Found: ${clang_tidy_major_version}.${clang_tidy_minor_version}.${clang_tidy_patch_version}")
   else()
     # Set clang-tidy as a CXX language standard option
-    set(CMAKE_CXX_CLANG_TIDY ${LIBHAL_CLANG_TIDY_PROGRAM})
     message(STATUS "${LIBHAL_TITLE} clang-tidy version ${clang_tidy_major_version}.${clang_tidy_minor_version}.${clang_tidy_patch_version} AVAILABLE!")
     set(LIBHAL_CLANG_TIDY_CONFIG_FILE
       "${LIBHAL_SCRIPT_PATH}/clang-tidy.conf")
@@ -59,6 +58,7 @@ endif()
 # Adds clang tidy check to target for host builds (skipped if a cross build)
 function(_libhal_add_clang_tidy_check TARGET)
   if(NOT ${CMAKE_CROSSCOMPILING})
+    set(CMAKE_CXX_CLANG_TIDY ${LIBHAL_CLANG_TIDY_PROGRAM})
     set_target_properties(${TARGET} PROPERTIES CXX_CLANG_TIDY
       "${LIBHAL_CLANG_TIDY}")
   else()
