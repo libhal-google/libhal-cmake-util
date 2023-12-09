@@ -66,22 +66,6 @@ function(_libhal_add_clang_tidy_check TARGET)
   endif()
 endfunction()
 
-function(_libhal_using_picolibc result_var)
-  string(FIND
-    "${CMAKE_EXE_LINKER_FLAGS_INIT}"
-    "--specs=picolibc.specs"
-    position
-  )
-
-  if(NOT ${position} EQUAL -1)
-    message(STATUS "picolibc found!")
-    set(${result_var} TRUE PARENT_SCOPE)
-  else()
-    message(STATUS "NO picolibc")
-    set(${result_var} FALSE PARENT_SCOPE)
-  endif()
-endfunction()
-
 function(libhal_make_library)
   # Parse CMake function arguments
   set(options USE_CLANG_TIDY)
@@ -293,15 +277,7 @@ function(libhal_build_demos)
     )
 
     if(${CMAKE_CROSSCOMPILING})
-      _libhal_using_picolibc(using_picolibc)
-
-      if("${DEMO_ARGS_LINK_FLAGS}" STREQUAL "" AND ${using_picolibc})
-        # Inject picolibc minimal startup code for application
-        set(DEMO_ARGS_LINK_FLAGS --oslib=semihost --crt0=minimal)
-      endif()
-
       target_link_options(${elf} PRIVATE ${DEMO_ARGS_LINK_FLAGS})
-
       # Convert elf into .bin, .hex and other formats needed for programming
       # devices.
       libhal_post_build(${elf})
