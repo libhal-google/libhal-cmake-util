@@ -227,18 +227,21 @@ function(libhal_build_demos)
       "must be defined. Make sure you are using the correct profile!")
   endif()
 
-  set(platform_link_library libhal::$ENV{LIBHAL_PLATFORM_LIBRARY})
-
   find_package(libhal-$ENV{LIBHAL_PLATFORM_LIBRARY} REQUIRED)
 
   foreach(PACKAGE ${DEMO_ARGS_PACKAGES})
     find_package(${PACKAGE} REQUIRED)
   endforeach()
 
-  add_library(startup_code
-    main.cpp
-    platforms/$ENV{LIBHAL_PLATFORM}.cpp
-    ${DEMO_ARGS_SOURCES})
+  set(startup_source_files main.cpp ${DEMO_ARGS_SOURCES})
+
+  # Makes the platform/<platform_name>.cpp file optional
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/platforms/$ENV{LIBHAL_PLATFORM}.cpp")
+      list(APPEND startup_source_files platforms/$ENV{LIBHAL_PLATFORM}.cpp)
+  endif()
+
+  add_library(startup_code ${startup_source_files})
+
   target_compile_features(startup_code PRIVATE cxx_std_20)
   target_include_directories(startup_code PUBLIC ${DEMO_ARGS_INCLUDES})
   target_compile_options(startup_code PRIVATE
@@ -250,7 +253,7 @@ function(libhal_build_demos)
   )
   target_link_libraries(startup_code PRIVATE
     ${DEMO_ARGS_LINK_LIBRARIES}
-    ${platform_link_library}
+    libhal::$ENV{LIBHAL_PLATFORM_LIBRARY}
   )
 
   if(NOT ${DEMO_ARGS_DISABLE_CLANG_TIDY})
@@ -273,7 +276,7 @@ function(libhal_build_demos)
     target_link_libraries(${elf} PRIVATE
       startup_code
       ${DEMO_ARGS_LINK_LIBRARIES}
-      ${platform_link_library}
+      libhal::$ENV{LIBHAL_PLATFORM_LIBRARY}
     )
 
     if(${CMAKE_CROSSCOMPILING})
