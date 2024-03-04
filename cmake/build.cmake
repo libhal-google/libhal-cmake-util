@@ -223,9 +223,14 @@ function(libhal_build_demos)
   if(NOT DEFINED ENV{LIBHAL_PLATFORM} OR
     NOT DEFINED ENV{LIBHAL_PLATFORM_LIBRARY})
     message(FATAL_ERROR
-      "Both LIBHAL_PLATFORM and LIBHAL_PLATFORM_LIBRARY environment variables "
-      "must be defined. Make sure you are using the correct profile!")
+      "${LIBHAL_TITLE}: Both LIBHAL_PLATFORM and LIBHAL_PLATFORM_LIBRARY "
+      "environment variables must be defined. Make sure you are using the "
+      "correct profile!")
   endif()
+
+  message(STATUS "${LIBHAL_TITLE}: LIBHAL_PLATFORM = $ENV{LIBHAL_PLATFORM}")
+  message(STATUS "${LIBHAL_TITLE}: LIBHAL_PLATFORM_LIBRARY = "
+                 "libhal-$ENV{LIBHAL_PLATFORM}")
 
   find_package(libhal-$ENV{LIBHAL_PLATFORM_LIBRARY} REQUIRED)
 
